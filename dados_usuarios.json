@@ -1,0 +1,128 @@
+{
+    "Jaymesson": {
+        "dias": 47,
+        "questoes": 4824,
+        "percentual": 66.98,
+        "acertos": 3231
+    },
+    "Raphael Santana": {
+        "dias": 47,
+        "questoes": 1974,
+        "percentual": 75.51,
+        "acertos": 1491
+    },
+    "Moisés Menezes": {
+        "dias": 32,
+        "questoes": 914,
+        "percentual": 69.47,
+        "acertos": 635
+    },
+    "Fernanda G": {
+        "dias": 21,
+        "questoes": 772,
+        "percentual": 56.02,
+        "acertos": 432
+    },
+    "Gustavo Rodrigues": {
+        "dias": 19,
+        "questoes": 435,
+        "percentual": 43.98,
+        "acertos": 191
+    },
+    "Kennedy Torres": {
+        "dias": 14,
+        "questoes": 2654,
+        "percentual": 65.51,
+        "acertos": 1739
+    },
+    "Carlos Caetano": {
+        "dias": 0,
+        "questoes": 2065,
+        "percentual": 62.87,
+        "acertos": 1298
+    },
+    "Michael Lemos": {
+        "dias": 0,
+        "questoes": 2062,
+        "percentual": 67.74,
+        "acertos": 1397
+    },
+    "Gabriel Moreira": {
+        "dias": 0,
+        "questoes": 1838,
+        "percentual": 60.74,
+        "acertos": 1116
+    },
+    "Miguel Paiva": {
+        "dias": 0,
+        "questoes": 1325,
+        "percentual": 35.4,
+        "acertos": 469
+    },
+    "Roberto Pontes": {
+        "dias": 0,
+        "questoes": 1302,
+        "percentual": 60.13,
+        "acertos": 783
+    },
+    "Danillo Spíndola": {
+        "dias": 0,
+        "questoes": 1108,
+        "percentual": 40.32,
+        "acertos": 447
+    },
+    "André Felipe": {
+        "dias": 0,
+        "questoes": 1063,
+        "percentual": 47.07,
+        "acertos": 500
+    },
+    "João Luiz": {
+        "dias": 0,
+        "questoes": 763,
+        "percentual": 37.64,
+        "acertos": 287
+    },
+    "Hugo Mesquita": {
+        "dias": 0,
+        "questoes": 429,
+        "percentual": 37.11,
+        "acertos": 159
+    },
+    "Miguel Marques": {
+        "dias": 0,
+        "questoes": 289,
+        "percentual": 12.57,
+        "acertos": 36
+    },
+    "Pedro Henrique": {
+        "dias": 0,
+        "questoes": 239,
+        "percentual": 17.57,
+        "acertos": 42
+    },
+    "Leonardo de Castro": {
+        "dias": 0,
+        "questoes": 206,
+        "percentual": 16.57,
+        "acertos": 34
+    },
+    "Fernando Kovaleski": {
+        "dias": 0,
+        "questoes": 137,
+        "percentual": 6.72,
+        "acertos": 9
+    },
+    "Victor Hugo": {
+        "dias": 0,
+        "questoes": 55,
+        "percentual": 4.32,
+        "acertos": 2
+    },
+    "Alex": {
+        "dias": 1,
+        "questoes": 30,
+        "percentual": 60.0,
+        "ultima_data": "2025-02-01"
+    }
+}
