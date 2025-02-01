@@ -16,8 +16,11 @@ import pandas as pd
 import re
 from PIL import Image, ImageDraw, ImageFont
 
-# Nome dos arquivos JSON
-ARQUIVO_DADOS = "dados_usuarios.json"
+# Obtém o diretório onde o script está localizado
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Define o caminho correto do JSON
+ARQUIVO_DADOS = os.path.join(BASE_DIR, "dados_usuarios.json")
 
 # Função para carregar JSON
 def carregar_dados(arquivo):
@@ -71,6 +74,10 @@ async def receber_dados(update: Update, context: CallbackContext):
         mensagem = update.message.text
         user = update.message.from_user
 
+        # 🔹 Verifica se o bot foi mencionado na mensagem
+        if context.bot.username not in mensagem:
+            return  # Se não foi mencionado, ignora a mensagem
+
         # Obtém o nome real do usuário (primeiro nome + sobrenome se disponível)
         nome_usuario = f"{user.first_name} {user.last_name}".strip() if user.last_name else user.first_name
 
@@ -83,6 +90,17 @@ async def receber_dados(update: Update, context: CallbackContext):
         fuso_brasilia = pytz.timezone("America/Sao_Paulo")
         data_atual = datetime.now(fuso_brasilia).strftime("%Y-%m-%d")
 
+        # 🔹 Garantir que todos os usuários tenham `ultima_data` preenchida corretamente
+        for usuario, dados in dados_usuarios.items():
+            if "ultima_data" not in dados or not dados["ultima_data"]:
+                dados_usuarios[usuario]["ultima_data"] = data_atual  # Define a data atual se estiver vazia
+
+        # 🔹 Remover números de telefone inválidos (exemplo: "+5500000000...")
+        for usuario, dados in dados_usuarios.items():
+            telefone_salvo = dados.get("telefone", "")
+            if telefone_salvo and "000000000" in telefone_salvo:  # Se o telefone for inválido, remove
+                dados_usuarios[usuario]["telefone"] = None
+
         # Verifica se o telefone já existe na base e associa ao nome
         usuario_existente = None
         for usuario, dados in dados_usuarios.items():
@@ -94,19 +112,17 @@ async def receber_dados(update: Update, context: CallbackContext):
         if usuario_existente:
             nome_usuario = usuario_existente  # Mantém o nome original do WhatsApp
 
-        # Separa os dados enviados (formato correto: `23/63%`)
-        if "/" in mensagem and "%" in mensagem:
-            partes = mensagem.split("/")
-            acertos_dia = int(partes[0])  # Número de questões acertadas no envio
-            percentual_dia = float(partes[1].replace("%", ""))  # Porcentagem enviada pelo usuário
+        # Separa os dados enviados (formato correto: `@SeLigaDEV 23/63%`)
+        padrao = rf"@{context.bot.username} (\d+)/(\d+)%"
+        match = re.search(padrao, mensagem)
+
+        if match:
+            acertos_dia = int(match.group(1))  # Número de questões acertadas no envio
+            percentual_dia = float(match.group(2))  # Porcentagem enviada pelo usuário
 
             if nome_usuario in dados_usuarios:
-                # Obtém a última data registrada e garante um valor padrão caso esteja vazia
-                ultima_data = dados_usuarios[nome_usuario].get("ultima_data", "")
-
-                if not ultima_data:  # Se for "", define a data atual
-                    dados_usuarios[nome_usuario]["ultima_data"] = data_atual
-                    ultima_data = data_atual  # Define a variável para evitar problemas abaixo
+                # Obtém a última data registrada
+                ultima_data = dados_usuarios[nome_usuario].get("ultima_data", data_atual)
 
                 # Se for um novo dia, incrementa a contagem de dias consecutivos
                 if ultima_data != data_atual:
@@ -155,7 +171,7 @@ async def receber_dados(update: Update, context: CallbackContext):
                 f"- **Média de Acertos**: {nova_porcentagem:.2f}%"
             )
         else:
-            await update.message.reply_text("Formato incorreto. Envie os dados como `23/63%`.")
+            return  # Não responde nada se o formato estiver errado
 
     except Exception as e:
         print(f"Erro ao processar mensagem: {e}")

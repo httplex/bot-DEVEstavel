@@ -4,145 +4,146 @@
         "questoes": 5201,
         "percentual": 66.78,
         "telefone": "+5585999280090",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Raphael Santana": {
         "dias": 47,
         "questoes": 1974,
         "percentual": 75.51,
         "telefone": "+5583987731607",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Moisés Menezes": {
         "dias": 32,
         "questoes": 914,
         "percentual": 69.47,
         "telefone": "+5581997110476",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Fernanda G": {
         "dias": 21,
         "questoes": 772,
         "percentual": 56.02,
         "telefone": "+5511964370171",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Gustavo Rodrigues": {
         "dias": 19,
         "questoes": 435,
         "percentual": 43.98,
         "telefone": "+5562984340881",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Kennedy Torres": {
         "dias": 14,
         "questoes": 2654,
         "percentual": 65.51,
         "telefone": "+5561992545288",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Carlos Caetano": {
         "dias": 0,
         "questoes": 2065,
         "percentual": 62.87,
         "telefone": "+5561991619524",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Michael Lemos": {
         "dias": 0,
         "questoes": 2062,
         "percentual": 67.74,
         "telefone": "+5584999962568",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Gabriel Moreira": {
         "dias": 0,
         "questoes": 1838,
         "percentual": 60.74,
         "telefone": "+5531999295675",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Miguel Paiva": {
         "dias": 0,
         "questoes": 1325,
         "percentual": 35.4,
-        "telefone": "+5500000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "ultima_data": ""
+        "telefone": "",
+        "ultima_data": "2025-02-01"
     },
     "Roberto Pontes": {
         "dias": 0,
         "questoes": 1302,
         "percentual": 60.13,
         "telefone": "+5596981192497",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Danillo Spíndola": {
         "dias": 0,
         "questoes": 1108,
         "percentual": 40.32,
         "telefone": "+5581989563924",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "André Felipe": {
         "dias": 0,
         "questoes": 1063,
         "percentual": 47.07,
         "telefone": "+5581997556903",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "João Luiz": {
         "dias": 0,
         "questoes": 763,
         "percentual": 37.64,
         "telefone": "+5586994669927",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Hugo Mesquita": {
         "dias": 0,
         "questoes": 429,
         "percentual": 37.11,
         "telefone": "+5598988642099",
-        "ultima_data": ""
+        "ultima_data": "2025-02-01"
     },
     "Miguel Marques": {
         "dias": 0,
         "questoes": 289,
         "percentual": 12.57,
-        "telefone": "+550000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "ultima_data": ""
+        "telefone": "",
+        "ultima_data": "2025-02-01"
     },
     "Pedro Henrique": {
         "dias": 0,
         "questoes": 239,
         "percentual": 17.57,
-        "telefone": "+5500000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "ultima_data": ""
+        "telefone": "",
+        "ultima_data": "2025-02-01"
     },
     "Leonardo de Castro": {
         "dias": 0,
         "questoes": 206,
         "percentual": 16.57,
-        "telefone": "+5500000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "ultima_data": ""
+        "telefone": "",
+        "ultima_data": "2025-02-01"
     },
     "Fernando Kovaleski": {
         "dias": 0,
         "questoes": 137,
         "percentual": 6.72,
-       "telefone": "+5500000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "ultima_data": ""
+        "telefone": "",
+        "ultima_data": "2025-02-01"
     },
     "Victor Hugo": {
         "dias": 0,
         "questoes": 55,
         "percentual": 4.32,
-        "telefone": "+550000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
-        "ultima_data": ""
+        "telefone": "",
+        "ultima_data": "2025-02-01"
     },
     "Alex": {
         "dias": 1,
         "questoes": 30,
         "percentual": 60.0,
-        "ultima_data": "2025-02-01"
+        "ultima_data": "2025-02-01",
+        "telefone": null
     }
 }
