@@ -13,6 +13,7 @@ import pytz
 import json
 import os
 import pandas as pd
+import re
 from PIL import Image, ImageDraw, ImageFont
 
 # Nome dos arquivos JSON
@@ -48,7 +49,23 @@ async def start(update: Update, context: CallbackContext):
     )
     print("🔹 Bot iniciado!")
 
-# 🔹 Processar envios de usuários
+# 🔹 Função para normalizar números brasileiros
+def normalizar_numero(numero):
+    if numero:
+        # Remove caracteres especiais e mantém apenas números
+        numero = re.sub(r"\D", "", numero)
+
+        # Garante que o número tenha o formato correto com +55
+        if len(numero) == 11 and numero.startswith("1"):  # Exemplo: 1198765432
+            numero = f"+55{numero}"
+
+        # Adiciona o "9" antes dos 8 últimos dígitos se for um número válido sem ele
+        if len(numero) == 13 and not numero[4] == "9":  # Exemplo: +551187654321 → +5511987654321
+            numero = numero[:4] + "9" + numero[4:]
+
+    return numero
+
+# 🔹 Processar envios de usuários e associar números ao Telegram
 async def receber_dados(update: Update, context: CallbackContext):
     try:
         mensagem = update.message.text
@@ -57,49 +74,92 @@ async def receber_dados(update: Update, context: CallbackContext):
         # Obtém o nome real do usuário (primeiro nome + sobrenome se disponível)
         nome_usuario = f"{user.first_name} {user.last_name}".strip() if user.last_name else user.first_name
 
+        # Obtém e normaliza o número de telefone (se disponível no Telegram)
+        telefone = None
+        if hasattr(user, "phone_number") and user.phone_number:
+            telefone = normalizar_numero(user.phone_number)
+
         # Obtém a data atual no fuso horário de Brasília
         fuso_brasilia = pytz.timezone("America/Sao_Paulo")
         data_atual = datetime.now(fuso_brasilia).strftime("%Y-%m-%d")
 
+        # Verifica se o telefone já existe na base e associa ao nome
+        usuario_existente = None
+        for usuario, dados in dados_usuarios.items():
+            telefone_salvo = normalizar_numero(dados.get("telefone"))
+            if telefone_salvo == telefone:
+                usuario_existente = usuario
+                break
+
+        if usuario_existente:
+            nome_usuario = usuario_existente  # Mantém o nome original do WhatsApp
+
+        # Separa os dados enviados (formato correto: `23/63%`)
         if "/" in mensagem and "%" in mensagem:
             partes = mensagem.split("/")
-            novas_questoes = int(partes[0])  # Agora sobrescrevendo o número de questões
-            nova_porcentagem = float(partes[1].replace("%", ""))  # Agora sobrescrevendo a porcentagem
+            acertos_dia = int(partes[0])  # Número de questões acertadas no envio
+            percentual_dia = float(partes[1].replace("%", ""))  # Porcentagem enviada pelo usuário
 
             if nome_usuario in dados_usuarios:
+                # Obtém a última data registrada e garante um valor padrão caso esteja vazia
                 ultima_data = dados_usuarios[nome_usuario].get("ultima_data", "")
+
+                if not ultima_data:  # Se for "", define a data atual
+                    dados_usuarios[nome_usuario]["ultima_data"] = data_atual
+                    ultima_data = data_atual  # Define a variável para evitar problemas abaixo
 
                 # Se for um novo dia, incrementa a contagem de dias consecutivos
                 if ultima_data != data_atual:
                     dados_usuarios[nome_usuario]["dias"] += 1
 
-                # 🔹 Agora, os valores antigos são completamente substituídos pelos novos
-                dados_usuarios[nome_usuario]["questoes"] = novas_questoes
-                dados_usuarios[nome_usuario]["percentual"] = round(nova_porcentagem, 2)
+                # Recupera os dados antigos
+                questoes_anteriores = dados_usuarios[nome_usuario]["questoes"]
+                porcentagem_anterior = dados_usuarios[nome_usuario]["percentual"]
+
+                # Atualiza corretamente o total de questões
+                dados_usuarios[nome_usuario]["questoes"] += acertos_dia  # Somente a soma dos acertos
+
+                # Recalcula a porcentagem correta (MÉDIA PONDERADA)
+                total_questoes = dados_usuarios[nome_usuario]["questoes"]
+
+                if total_questoes > 0:
+                    nova_porcentagem = ((porcentagem_anterior * questoes_anteriores) + (percentual_dia * acertos_dia)) / total_questoes
+                else:
+                    nova_porcentagem = percentual_dia  # Caso inicial
+
+                # Garante que a porcentagem esteja entre 0% e 100%
+                nova_porcentagem = min(max(nova_porcentagem, 0), 100)
+                nova_porcentagem = round(nova_porcentagem, 2)
+
+                dados_usuarios[nome_usuario]["percentual"] = nova_porcentagem
                 dados_usuarios[nome_usuario]["ultima_data"] = data_atual  # Atualiza a última data
             else:
                 # Se o usuário não estava no JSON, cria um novo cadastro
+                nova_porcentagem = round(percentual_dia, 2)
+
                 dados_usuarios[nome_usuario] = {
                     "dias": 1,
-                    "questoes": novas_questoes,  # Sobrescrevendo
-                    "percentual": round(nova_porcentagem, 2),  # Sobrescrevendo
-                    "ultima_data": data_atual  # Registra a primeira data
+                    "questoes": acertos_dia,  # Total de questões = total de acertos enviados
+                    "percentual": nova_porcentagem,  # Usa a porcentagem enviada pelo usuário
+                    "ultima_data": data_atual,  # Registra a primeira data
+                    "telefone": telefone  # Salva o telefone do usuário
                 }
 
             salvar_dados(ARQUIVO_DADOS, dados_usuarios)
 
-            # 🔹 Resposta confirmando a substituição dos dados antigos pelos novos
+            # Resposta confirmando a atualização
             await update.message.reply_text(
-                f"📊 {nome_usuario}, seus dados foram ATUALIZADOS:\n"
+                f"📊 {nome_usuario}, seus dados foram atualizados:\n"
                 f"- **Dias consecutivos**: {dados_usuarios[nome_usuario]['dias']}\n"
                 f"- **Total de Questões**: {dados_usuarios[nome_usuario]['questoes']}\n"
-                f"- **Média de Acertos**: {dados_usuarios[nome_usuario]['percentual']:.2f}%"
+                f"- **Média de Acertos**: {nova_porcentagem:.2f}%"
             )
         else:
             await update.message.reply_text("Formato incorreto. Envie os dados como `23/63%`.")
 
     except Exception as e:
         print(f"Erro ao processar mensagem: {e}")
+
 
 # 🔹 Função para zerar dias consecutivos se o usuário não enviar mensagem até as 23h (Horário de Brasília)
 def zerar_dias_consecutivos():

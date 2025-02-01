@@ -1,123 +1,143 @@
 {
     "Jaymesson": {
-        "dias": 47,
-        "questoes": 4824,
-        "percentual": 66.98,
-        "acertos": 3231
+        "dias": 51,
+        "questoes": 5201,
+        "percentual": 66.78,
+        "telefone": "+5585999280090",
+        "ultima_data": ""
     },
     "Raphael Santana": {
         "dias": 47,
         "questoes": 1974,
         "percentual": 75.51,
-        "acertos": 1491
+        "telefone": "+5583987731607",
+        "ultima_data": ""
     },
     "Moisés Menezes": {
         "dias": 32,
         "questoes": 914,
         "percentual": 69.47,
-        "acertos": 635
+        "telefone": "+5581997110476",
+        "ultima_data": ""
     },
     "Fernanda G": {
         "dias": 21,
         "questoes": 772,
         "percentual": 56.02,
-        "acertos": 432
+        "telefone": "+5511964370171",
+        "ultima_data": ""
     },
     "Gustavo Rodrigues": {
         "dias": 19,
         "questoes": 435,
         "percentual": 43.98,
-        "acertos": 191
+        "telefone": "+5562984340881",
+        "ultima_data": ""
     },
     "Kennedy Torres": {
         "dias": 14,
         "questoes": 2654,
         "percentual": 65.51,
-        "acertos": 1739
+        "telefone": "+5561992545288",
+        "ultima_data": ""
     },
     "Carlos Caetano": {
         "dias": 0,
         "questoes": 2065,
         "percentual": 62.87,
-        "acertos": 1298
+        "telefone": "+5561991619524",
+        "ultima_data": ""
     },
     "Michael Lemos": {
         "dias": 0,
         "questoes": 2062,
         "percentual": 67.74,
-        "acertos": 1397
+        "telefone": "+5584999962568",
+        "ultima_data": ""
     },
     "Gabriel Moreira": {
         "dias": 0,
         "questoes": 1838,
         "percentual": 60.74,
-        "acertos": 1116
+        "telefone": "+5531999295675",
+        "ultima_data": ""
     },
     "Miguel Paiva": {
         "dias": 0,
         "questoes": 1325,
         "percentual": 35.4,
-        "acertos": 469
+        "telefone": "+5500000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "ultima_data": ""
     },
     "Roberto Pontes": {
         "dias": 0,
         "questoes": 1302,
         "percentual": 60.13,
-        "acertos": 783
+        "telefone": "+5596981192497",
+        "ultima_data": ""
     },
     "Danillo Spíndola": {
         "dias": 0,
         "questoes": 1108,
         "percentual": 40.32,
-        "acertos": 447
+        "telefone": "+5581989563924",
+        "ultima_data": ""
     },
     "André Felipe": {
         "dias": 0,
         "questoes": 1063,
         "percentual": 47.07,
-        "acertos": 500
+        "telefone": "+5581997556903",
+        "ultima_data": ""
     },
     "João Luiz": {
         "dias": 0,
         "questoes": 763,
         "percentual": 37.64,
-        "acertos": 287
+        "telefone": "+5586994669927",
+        "ultima_data": ""
     },
     "Hugo Mesquita": {
         "dias": 0,
         "questoes": 429,
         "percentual": 37.11,
-        "acertos": 159
+        "telefone": "+5598988642099",
+        "ultima_data": ""
     },
     "Miguel Marques": {
         "dias": 0,
         "questoes": 289,
         "percentual": 12.57,
-        "acertos": 36
+        "telefone": "+550000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "ultima_data": ""
     },
     "Pedro Henrique": {
         "dias": 0,
         "questoes": 239,
         "percentual": 17.57,
-        "acertos": 42
+        "telefone": "+5500000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "ultima_data": ""
     },
     "Leonardo de Castro": {
         "dias": 0,
         "questoes": 206,
         "percentual": 16.57,
-        "acertos": 34
+        "telefone": "+5500000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "ultima_data": ""
     },
     "Fernando Kovaleski": {
         "dias": 0,
         "questoes": 137,
         "percentual": 6.72,
-        "acertos": 9
+       "telefone": "+5500000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "ultima_data": ""
     },
     "Victor Hugo": {
         "dias": 0,
         "questoes": 55,
         "percentual": 4.32,
-        "acertos": 2
+        "telefone": "+550000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "ultima_data": ""
     },
     "Alex": {
         "dias": 1,
