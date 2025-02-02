@@ -14,6 +14,7 @@ import json
 import os
 import pandas as pd
 import re
+# 🔹 Função para gerar a imagem do ranking
 from PIL import Image, ImageDraw, ImageFont
 
 # Obtém o diretório onde o script está localizado
@@ -81,36 +82,9 @@ async def receber_dados(update: Update, context: CallbackContext):
         # Obtém o nome real do usuário (primeiro nome + sobrenome se disponível)
         nome_usuario = f"{user.first_name} {user.last_name}".strip() if user.last_name else user.first_name
 
-        # Obtém e normaliza o número de telefone (se disponível no Telegram)
-        telefone = None
-        if hasattr(user, "phone_number") and user.phone_number:
-            telefone = normalizar_numero(user.phone_number)
-
         # Obtém a data atual no fuso horário de Brasília
         fuso_brasilia = pytz.timezone("America/Sao_Paulo")
         data_atual = datetime.now(fuso_brasilia).strftime("%Y-%m-%d")
-
-        # 🔹 Garantir que todos os usuários tenham `ultima_data` preenchida corretamente
-        for usuario, dados in dados_usuarios.items():
-            if "ultima_data" not in dados or not dados["ultima_data"]:
-                dados_usuarios[usuario]["ultima_data"] = data_atual  # Define a data atual se estiver vazia
-
-        # 🔹 Remover números de telefone inválidos (exemplo: "+5500000000...")
-        for usuario, dados in dados_usuarios.items():
-            telefone_salvo = dados.get("telefone", "")
-            if telefone_salvo and "000000000" in telefone_salvo:  # Se o telefone for inválido, remove
-                dados_usuarios[usuario]["telefone"] = None
-
-        # Verifica se o telefone já existe na base e associa ao nome
-        usuario_existente = None
-        for usuario, dados in dados_usuarios.items():
-            telefone_salvo = normalizar_numero(dados.get("telefone"))
-            if telefone_salvo == telefone:
-                usuario_existente = usuario
-                break
-
-        if usuario_existente:
-            nome_usuario = usuario_existente  # Mantém o nome original do WhatsApp
 
         # Separa os dados enviados (formato correto: `@SeLigaDEV 23/63%`)
         padrao = rf"@{context.bot.username} (\d+)/(\d+)%"
@@ -122,43 +96,46 @@ async def receber_dados(update: Update, context: CallbackContext):
 
             if nome_usuario in dados_usuarios:
                 # Obtém a última data registrada
-                ultima_data = dados_usuarios[nome_usuario].get("ultima_data", data_atual)
+                ultima_data = dados_usuarios[nome_usuario].get("ultima_data", "")
 
-                # Se for um novo dia, incrementa a contagem de dias consecutivos
+                # Se for um novo dia, acumula os dados antigos no total antes de sobrescrever
                 if ultima_data != data_atual:
+                    if "questoes_do_dia" in dados_usuarios[nome_usuario]:
+                        # Adiciona as questões do dia anterior ao total
+                        dados_usuarios[nome_usuario]["questoes"] += dados_usuarios[nome_usuario]["questoes_do_dia"]
+                    
+                    if "percentual_do_dia" in dados_usuarios[nome_usuario]:
+                        # Atualiza a média ponderada usando o total de questões
+                        total_questoes = dados_usuarios[nome_usuario]["questoes"]
+                        if total_questoes > 0:
+                            nova_porcentagem = (
+                                (dados_usuarios[nome_usuario]["percentual"] * total_questoes) +
+                                (dados_usuarios[nome_usuario]["percentual_do_dia"] * dados_usuarios[nome_usuario]["questoes_do_dia"])
+                            ) / total_questoes
+                            dados_usuarios[nome_usuario]["percentual"] = round(nova_porcentagem, 2)
+
+                    # Reseta os valores do dia
+                    dados_usuarios[nome_usuario]["questoes_do_dia"] = acertos_dia
+                    dados_usuarios[nome_usuario]["percentual_do_dia"] = percentual_dia
                     dados_usuarios[nome_usuario]["dias"] += 1
 
-                # Recupera os dados antigos
-                questoes_anteriores = dados_usuarios[nome_usuario]["questoes"]
-                porcentagem_anterior = dados_usuarios[nome_usuario]["percentual"]
-
-                # Atualiza corretamente o total de questões
-                dados_usuarios[nome_usuario]["questoes"] += acertos_dia  # Somente a soma dos acertos
-
-                # Recalcula a porcentagem correta (MÉDIA PONDERADA)
-                total_questoes = dados_usuarios[nome_usuario]["questoes"]
-
-                if total_questoes > 0:
-                    nova_porcentagem = ((porcentagem_anterior * questoes_anteriores) + (percentual_dia * acertos_dia)) / total_questoes
                 else:
-                    nova_porcentagem = percentual_dia  # Caso inicial
+                    # Se for o mesmo dia, sobrescreve as questões e a porcentagem do dia
+                    dados_usuarios[nome_usuario]["questoes_do_dia"] = acertos_dia
+                    dados_usuarios[nome_usuario]["percentual_do_dia"] = percentual_dia
 
-                # Garante que a porcentagem esteja entre 0% e 100%
-                nova_porcentagem = min(max(nova_porcentagem, 0), 100)
-                nova_porcentagem = round(nova_porcentagem, 2)
+                # Atualiza a última data de envio
+                dados_usuarios[nome_usuario]["ultima_data"] = data_atual  
 
-                dados_usuarios[nome_usuario]["percentual"] = nova_porcentagem
-                dados_usuarios[nome_usuario]["ultima_data"] = data_atual  # Atualiza a última data
             else:
                 # Se o usuário não estava no JSON, cria um novo cadastro
-                nova_porcentagem = round(percentual_dia, 2)
-
                 dados_usuarios[nome_usuario] = {
                     "dias": 1,
-                    "questoes": acertos_dia,  # Total de questões = total de acertos enviados
-                    "percentual": nova_porcentagem,  # Usa a porcentagem enviada pelo usuário
+                    "questoes": 0,  # O total só será atualizado no próximo dia
+                    "questoes_do_dia": acertos_dia,  # Armazena apenas o dado do dia
+                    "percentual": percentual_dia,  # Começa com a primeira porcentagem enviada
+                    "percentual_do_dia": percentual_dia,  # Armazena o dado do dia
                     "ultima_data": data_atual,  # Registra a primeira data
-                    "telefone": telefone  # Salva o telefone do usuário
                 }
 
             salvar_dados(ARQUIVO_DADOS, dados_usuarios)
@@ -166,9 +143,11 @@ async def receber_dados(update: Update, context: CallbackContext):
             # Resposta confirmando a atualização
             await update.message.reply_text(
                 f"📊 {nome_usuario}, seus dados foram atualizados:\n"
-                f"- **Dias consecutivos**: {dados_usuarios[nome_usuario]['dias']}\n"
-                f"- **Total de Questões**: {dados_usuarios[nome_usuario]['questoes']}\n"
-                f"- **Média de Acertos**: {nova_porcentagem:.2f}%"
+                f"- Dias consecutivos: {dados_usuarios[nome_usuario]['dias']}\n"
+                f"- Questões do Dia: {dados_usuarios[nome_usuario]['questoes_do_dia']}\n"
+                f"- Média do Dia: {dados_usuarios[nome_usuario]['percentual_do_dia']:.2f}%\n"
+                f"- Total de Questões: {dados_usuarios[nome_usuario]['questoes']}\n"
+                f"- Média Total: {dados_usuarios[nome_usuario]['percentual']:.2f}%"
             )
         else:
             return  # Não responde nada se o formato estiver errado
@@ -209,17 +188,14 @@ def run_schedule():
         time.sleep(1)
 
 
-# 🔹 Função para gerar a imagem do ranking
-from PIL import Image, ImageDraw, ImageFont
-
 # 🔹 Caminhos das imagens das medalhas (use imagens reais de medalhas)
 MEDALHAS = {
-    1: "medalha_ouro.png",   # 🥇
-    2: "medalha_prata.png",  # 🥈
-    3: "medalha_bronze.png"  # 🥉
+    1: "imagem/medalha_ouro.png",   # 🥇
+    2: "imagem/medalha_prata.png",  # 🥈
+    3: "imagem/medalha_bronze.png"  # 🥉
 }
 
-# 🔹 Função para gerar a imagem do ranking com as medalhas ao lado dos nomes
+# Função para gerar a imagem do ranking com títulos em negrito e medalhas ao lado dos nomes
 def gerar_imagem_ranking():
     try:
         # Ordena os usuários pelo número de dias (do maior para o menor)
@@ -229,25 +205,32 @@ def gerar_imagem_ranking():
             return None, []
 
         # Configuração da imagem
-        largura, altura = 600, 50 + len(ranking) * 40
+        largura, altura = 600, 50 + len(ranking) * 50  # Ajuste para espaçamento adequado
         img = Image.new("RGB", (largura, altura), color="white")
         draw = ImageDraw.Draw(img)
 
-        # Carregar fonte
+        # Carregar fontes (padrão e negrito)
         try:
-            fonte = ImageFont.truetype("arial.ttf", size=20)
+            fonte_normal = ImageFont.truetype("arial.ttf", size=20)
+            fonte_bold = ImageFont.truetype("arialbd.ttf", size=22)  # Fonte em negrito
         except IOError:
-            fonte = ImageFont.load_default()
+            fonte_normal = ImageFont.load_default()
+            fonte_bold = fonte_normal  # Usa a fonte padrão caso não encontre a negrito
 
-        # Cabeçalho
+        # Cabeçalho em negrito
         y_offset = 10
         colunas = ["Candidatos", "Dias", "#Q", "%"]
-        x_positions = [50, 250, 350, 450]  # Ajustado para dar espaço às medalhas
+        x_positions = [70, 250, 350, 450]  # Ajustado para dar espaço às medalhas
         for i, coluna in enumerate(colunas):
-            draw.text((x_positions[i], y_offset), coluna, fill="black", font=fonte)
+            # Escreve duas vezes para simular negrito (caso fonte bold não esteja disponível)
+            draw.text((x_positions[i], y_offset), coluna, fill="black", font=fonte_bold)
+            draw.text((x_positions[i] + 1, y_offset), coluna, fill="black", font=fonte_bold)
+
+        # Ajuste no tamanho das medalhas
+        tamanho_medalha = (35, 35)  # Ajuste para manter as proporções corretas
 
         # Adicionando os dados do ranking ordenados por dias
-        y_offset += 30
+        y_offset += 40
         for i, (usuario, dados) in enumerate(ranking, start=1):
             percentual_formatado = f"{dados['percentual']:0.2f}%"
 
@@ -257,13 +240,13 @@ def gerar_imagem_ranking():
             if i <= 3:
                 medalha_path = MEDALHAS.get(i)
                 if medalha_path and os.path.exists(medalha_path):
-                    medalha = Image.open(medalha_path).resize((25, 25))  # Redimensiona a medalha
-                    img.paste(medalha, (10, y_offset))  # Coloca a medalha na posição correta
+                    medalha = Image.open(medalha_path).resize(tamanho_medalha, Image.LANCZOS)  # Redimensiona mantendo qualidade
+                    img.paste(medalha, (10, y_offset - 5), medalha.convert("RGBA"))  # Alinha corretamente
 
             # Escrever os dados na imagem
             for j, valor in enumerate(valores):
-                draw.text((x_positions[j], y_offset), valor, fill="black", font=fonte)
-            y_offset += 30
+                draw.text((x_positions[j], y_offset), valor, fill="black", font=fonte_normal)
+            y_offset += 50  # Ajuste para evitar sobreposição
 
         # Salva a imagem
         image_path = "ranking.png"
