@@ -1,0 +1,6 @@
+Flask
+requests
+python-telegram-bot==20.0
+pytz
+schedule
+Pillow
