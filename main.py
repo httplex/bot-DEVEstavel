@@ -2,18 +2,15 @@
 #CHAT_ID = "-1002425178067" -1002425178067 # Chat ID ou username para quem o bot enviará as mensagensfrom telegram import Bot
 from flask import Flask, request
 import os
-import requests
 from telegram import Bot, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackContext, filters
-import schedule
-import asyncio
+import schedule # Responsável por agendar e executar uma tarefa automaticamente em um horário específico
 import time
 from threading import Thread
 from datetime import datetime
 import pytz
 import json
 import re
-from PIL import Image, ImageDraw, ImageFont
 
 # 🔹 Inicializa o Flask
 app = Flask(__name__)
@@ -155,5 +152,6 @@ def run_schedule():
 Thread(target=run_schedule).start()
 
 # 🔹 Executa o Flask no Appwrite
+# 🔹 Sem o main pq usando flask ele depende do framework, o flask lida com tudo
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=3000)
