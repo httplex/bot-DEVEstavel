@@ -1,5 +1,5 @@
 import os
-import json
+from dotenv import load_dotenv
 import time
 import schedule
 import pytz
@@ -10,6 +10,8 @@ from telegram import Bot, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackContext, filters
 from appwrite.client import Client
 from appwrite.services.databases import Databases
+
+load_dotenv()  # Carrega as variáveis do .env
 
 # 🔹 Token do bot e chat ID
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
