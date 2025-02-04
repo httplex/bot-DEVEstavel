@@ -32,9 +32,7 @@ database = Databases(client)
 database_id = "67a181ae00117541a360"  # ID do banco no Appwrite
 collection_id = "67a25399002c05c91fcc"  # ID da coleção onde os dados serão salvos
 
-# 🔹 Configuração do Bot
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-
+# 🔹 Comando /start
 async def start(update: Update, context: CallbackContext):
     await update.message.reply_text(
         "✅ Bot iniciado!\n\n"
@@ -171,11 +169,13 @@ Thread(target=run_schedule).start()
 
 # 🔹 Corrigindo a função main para o Appwrite
 def main(context):
+    asyncio.run(setup_bot())  # Executa o bot no ambiente correto
+    return context.res.send("Bot rodando!")  # Retorna resposta para o Appwrite
+
+async def setup_bot():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
-    
+    app.add_handler(CommandHandler("ranking", gerar_ranking))
+
     print("🚀 Bot está rodando no Appwrite...")  
-    app.run_polling()
-
-    return context.res.send("Bot rodando!")  # Resposta para o Appwrite
-
+    await app.run_polling()
