@@ -1,3 +1,4 @@
+appwrite
 Flask
 requests
 python-telegram-bot==20.0
