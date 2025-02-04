@@ -41,7 +41,6 @@ async def start(update: Update, context: CallbackContext):
         "📌 Use `/ranking` para ver o ranking."
     )
 
-
 # 🔹 Função para salvar ou atualizar os dados no Appwrite
 def salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_dia):
     try:
@@ -171,13 +170,12 @@ def run_schedule():
 Thread(target=run_schedule).start()
 
 # 🔹 Corrigindo a função main para o Appwrite
-def main():
+def main(context):
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     
-    print("Bot está rodando...")  
+    print("🚀 Bot está rodando no Appwrite...")  
     app.run_polling()
 
-if __name__ == "__main__":
-    main()
+    return context.res.send("Bot rodando!")  # Resposta para o Appwrite
 
