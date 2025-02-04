@@ -1,6 +1,3 @@
-#TOKEN DO BOT = "7493460267:AAFHXDyo1wAL3MYhIKUMiC_0Rj_h80c4kFI"
-#CHAT_ID = "-1002425178067" -1002425178067 # Chat ID 
-
 from telegram import Bot, Update  # Interagir com a API do Telegram
 from flask import Flask, request  # Rodar no Appwrite (leve e eficiente)
 import os  # Manipular variáveis de ambiente
@@ -28,6 +25,7 @@ bot = Bot(token=TOKEN)
 client = Client()
 client.set_endpoint("https://cloud.appwrite.io/v1")  # Substituir pelo endpoint do seu Appwrite
 client.set_project("679ec825003109b1dc49")  # ID do projeto
+#Key que tive que criar no appwrite
 client.set_key("standard_ff51eae676622efcc1041c84688e46a5284a0ab89bc75998cba61ab59d367f96e167b1b972dd3d74d6603bce78a81d0addcf8bfba94ef668bf684e4525ed9b9eb697755ce6289cd48c377132b7c6e8acda983824b3911540ff10af4cbd1c0ff52957c2a889046f63a17e10e1104ef82079dcec6d1c707115cb2e0b9bb843e916")
 database = Databases(client)
 
@@ -49,7 +47,6 @@ def salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_
         fuso_brasilia = pytz.timezone("America/Sao_Paulo")
         data_atual = datetime.now(fuso_brasilia).strftime("%Y-%m-%d")
 
-        # 🔹 Verifica se o usuário já está no banco
         response = database.list_documents(
             database_id=database_id,
             collection_id=collection_id,
@@ -165,8 +162,8 @@ async def gerar_ranking(update: Update, context: CallbackContext):
     except Exception as e:
         print(f"Erro ao gerar ranking: {str(e)}")
 
-# 🔹 Adiciona comandos ao bot
-def main():
+# 🔹 Função principal para rodar no Appwrite
+def main(context):
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ranking", gerar_ranking))
@@ -174,5 +171,3 @@ def main():
     print("Bot rodando...")
     app.run_polling()
 
-if __name__ == "__main__":
-    main()
