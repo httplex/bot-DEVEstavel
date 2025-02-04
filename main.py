@@ -200,9 +200,13 @@ async def setup_bot():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, receber_mensagem))
 
     print("🚀 Bot rodando no Appwrite...")
-    await app.run_polling()
+    
+    # Rodando polling no modo assíncrono sem bloquear a execução principal
+    asyncio.create_task(app.run_polling())
 
+    
 # 🔹 Função Main para o Appwrite
 async def main(context):
-    asyncio.create_task(setup_bot())  # Executa sem bloquear o Appwrite
+    print("🔄 Iniciando bot no Appwrite...")
+    await setup_bot()  # Agora ele inicia corretamente
     return context.res.send("Bot rodando!")
