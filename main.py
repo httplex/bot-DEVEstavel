@@ -32,6 +32,16 @@ database = Databases(client)
 database_id = "67a181ae00117541a360"  # ID do banco no Appwrite
 collection_id = "67a25399002c05c91fcc"  # ID da coleção onde os dados serão salvos
 
+# 🔹 Função para iniciar o bot corretamente
+def start(update: Update, context: CallbackContext):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="✅ *Bot iniciado com sucesso!*", parse_mode="Markdown")
+
+# 🔹 Configura os handlers corretamente
+def setup_bot():
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.run_polling()
+
 # 🔹 Função para salvar ou atualizar os dados no Appwrite
 def salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_dia):
     try:
@@ -172,6 +182,7 @@ def webhook():
 # 🔹 Função principal para rodar no Appwrite
 def main(context):
     context.log("🚀 Função executada no Appwrite!")
-    return context.res.empty()  # Adiciona o retorno esperado pelo Appwrite
+    setup_bot()  # Garante que o bot está rodando e processando comandos
+    return context.res.empty()
 
 
