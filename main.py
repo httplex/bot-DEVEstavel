@@ -1,20 +1,15 @@
-from telegram import Bot, Update  # Interagir com a API do Telegram
-from flask import Flask, request  # Rodar no Appwrite (leve e eficiente)
-import os  # Manipular variáveis de ambiente
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackContext, filters
-import schedule  # Reset diário automático
+import os
+import json
 import time
-from threading import Thread
-from datetime import datetime
+import schedule
 import pytz
 import asyncio
+from threading import Thread
+from datetime import datetime
+from telegram import Bot, Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackContext, filters
 from appwrite.client import Client
 from appwrite.services.databases import Databases
-from PIL import Image, ImageDraw, ImageFont
-import io
-
-# 🔹 Inicializa o Flask
-app = Flask(__name__)
 
 # 🔹 Token do bot e chat ID
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -34,10 +29,33 @@ collection_id = "67a25399002c05c91fcc"  # ID da coleção onde os dados serão s
 
 # 🔹 Comando /start
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text(
-        "✅ Bot iniciado!\n\n"
-        "📌 Use `/ranking` para ver o ranking."
-    )
+    await update.message.reply_text("✅ Bot iniciado!\n\n📌 Use `/ranking` para ver o ranking.")
+
+# 🔹 Processa mensagens recebidas
+async def receber_mensagem(update: Update, context: CallbackContext):
+    try:
+        mensagem = update.message.text
+        user = update.message.from_user
+        nome_usuario = f"{user.first_name} {user.last_name}".strip() if user.last_name else user.first_name
+        telegram_id = str(user.id)
+
+        if mensagem.startswith("/"):
+            return  # Ignorar comandos não implementados
+
+        # Expressão regular para capturar mensagens com formato `23/63%`
+        import re
+        padrao = r"(\d+)/(\d+)%"
+        match = re.search(padrao, mensagem)
+
+        if match:
+            acertos_dia = int(match.group(1))
+            percentual_dia = float(match.group(2))
+
+            salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_dia)
+
+            await update.message.reply_text(f"📊 {nome_usuario}, seus dados foram atualizados no banco!")
+    except Exception as e:
+        print(f"Erro ao processar mensagem: {e}")
 
 # 🔹 Função para salvar ou atualizar os dados no Appwrite
 def salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_dia):
@@ -107,6 +125,10 @@ def salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_
     except Exception as e:
         print(f"Erro ao salvar dados no Appwrite: {str(e)}")
 
+# 🔹 Comando /relatorio (testa a exibição do ranking antes de enviar)
+async def relatorio(update: Update, context: CallbackContext):
+    await gerar_ranking(update, context)
+
 # 🔹 Comando para gerar ranking e criar a imagem
 async def gerar_ranking(update: Update, context: CallbackContext):
     try:
@@ -167,17 +189,18 @@ def run_schedule():
 
 Thread(target=run_schedule).start()
 
-# 🔹 Setup do bot sem bloquear o loop principal
+# 🔹 Inicializa o bot
 async def setup_bot():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ranking", gerar_ranking))
+    app.add_handler(CommandHandler("relatorio", relatorio))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, receber_mensagem))
 
-    print("🚀 Bot está rodando no Appwrite...")
+    print("🚀 Bot rodando no Appwrite...")
     await app.run_polling()
 
 # 🔹 Função Main para o Appwrite
 async def main(context):
-    loop = asyncio.get_event_loop()
-    loop.create_task(setup_bot())  # Inicia o bot sem bloquear o Appwrite
+    asyncio.create_task(setup_bot())  # Executa sem bloquear o Appwrite
     return context.res.send("Bot rodando!")
