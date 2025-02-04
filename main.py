@@ -172,5 +172,6 @@ def webhook():
 # 🔹 Função principal para rodar no Appwrite
 def main(context):
     print("🚀 Função executada no Appwrite!")
-    print("📜 Contexto recebido:", context)  # Apenas para debug
+    return context.res.empty()  # Adiciona o retorno esperado pelo Appwrite
+
 
