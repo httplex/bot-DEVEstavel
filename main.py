@@ -167,15 +167,17 @@ def run_schedule():
 
 Thread(target=run_schedule).start()
 
-# 🔹 Corrigindo a função main para o Appwrite
-def main(context):
-    asyncio.run(setup_bot())  # Executa o bot no ambiente correto
-    return context.res.send("Bot rodando!")  # Retorna resposta para o Appwrite
-
+# 🔹 Setup do bot sem bloquear o loop principal
 async def setup_bot():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ranking", gerar_ranking))
 
-    print("🚀 Bot está rodando no Appwrite...")  
+    print("🚀 Bot está rodando no Appwrite...")
     await app.run_polling()
+
+# 🔹 Função Main para o Appwrite
+async def main(context):
+    loop = asyncio.get_event_loop()
+    loop.create_task(setup_bot())  # Inicia o bot sem bloquear o Appwrite
+    return context.res.send("Bot rodando!")
