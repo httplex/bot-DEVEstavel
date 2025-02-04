@@ -199,14 +199,19 @@ async def setup_bot():
     app.add_handler(CommandHandler("relatorio", relatorio))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, receber_mensagem))
 
-    print("🚀 Bot rodando no Appwrite...")
+    print("🚀 Bot rodando no Appwrite via Webhook...")
     
-    # Rodando polling no modo assíncrono sem bloquear a execução principal
-    asyncio.create_task(app.run_polling())
+    await app.run_webhook(
+        listen="0.0.0.0",  # Escuta em todas as interfaces de rede
+        port=3000,  # Porta padrão do Appwrite
+        webhook_url=f"https://67a004893d57d0f92d6b.appwrite.global/"
+    )
+
 
     
 # 🔹 Função Main para o Appwrite
 async def main(context):
-    print("🔄 Iniciando bot no Appwrite...")
-    await setup_bot()  # Agora ele inicia corretamente
-    return context.res.send("Bot rodando!")
+    print("🔄 Iniciando bot no Appwrite via Webhook...")
+    asyncio.create_task(setup_bot())  # Executa sem bloquear a thread principal
+    return context.res.send("Bot rodando com Webhook!")
+
