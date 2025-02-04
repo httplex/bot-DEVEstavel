@@ -128,9 +128,9 @@ async def gerar_ranking(update: Update, context: CallbackContext):
 
         usuarios = sorted(usuarios, key=lambda x: (-x["dias"], -x["questoes"]))
 
-        medalha_ouro = Image.open("imagens/medalha_ouro.png").resize((50, 50))
-        medalha_prata = Image.open("imagens/medalha_prata.png").resize((50, 50))
-        medalha_bronze = Image.open("imagens/medalha_bronze.png").resize((50, 50))
+        medalha_ouro = Image.open("imagem/medalha_ouro.png").resize((50, 50))
+        medalha_prata = Image.open("imagem/medalha_prata.png").resize((50, 50))
+        medalha_bronze = Image.open("imagem/medalha_bronze.png").resize((50, 50))
         medalhas = [medalha_ouro, medalha_prata, medalha_bronze]
 
         largura = 600
