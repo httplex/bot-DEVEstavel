@@ -32,19 +32,15 @@ database = Databases(client)
 database_id = "67a181ae00117541a360"  # ID do banco no Appwrite
 collection_id = "67a25399002c05c91fcc"  # ID da coleção onde os dados serão salvos
 
-# 🔹 Função para iniciar o bot corretamente
-def start(update: Update, context: CallbackContext):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="✅ *Bot iniciado com sucesso!*", parse_mode="Markdown")
+# 🔹 Configuração do Bot
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
-# 🔹 Configura os handlers corretamente
-def setup_bot():
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
+async def start(update: Update, context: CallbackContext):
+    await update.message.reply_text(
+        "✅ Bot iniciado!\n\n"
+        "📌 Use `/ranking` para ver o ranking."
+    )
 
-    # Usa run_async() para evitar conflitos com o loop do Appwrite
-    asyncio.create_task(app.initialize())
-    asyncio.create_task(app.start())
-    asyncio.create_task(app.updater.start_polling())
 
 # 🔹 Função para salvar ou atualizar os dados no Appwrite
 def salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_dia):
@@ -174,18 +170,14 @@ def run_schedule():
 
 Thread(target=run_schedule).start()
 
-# 🔹 Webhook para receber mensagens do Telegram
-@app.route("/", methods=["POST"])
-def webhook():
-    data = request.json
-    update = Update.de_json(data, bot)
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.process_update(update)
-    return {"status": "ok"}
-
 # 🔹 Corrigindo a função main para o Appwrite
-def main(context):
-    context.log("🚀 Função executada no Appwrite!")
-    setup_bot()  # Inicia o bot sem bloquear o loop do Appwrite
-    return context.res.empty()
+def main():
+    app = ApplicationBuilder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    
+    print("Bot está rodando...")  
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
 
