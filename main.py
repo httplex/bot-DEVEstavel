@@ -7,7 +7,7 @@ import time
 from threading import Thread
 from datetime import datetime
 import pytz
-import re
+import asyncio
 from appwrite.client import Client
 from appwrite.services.databases import Databases
 from PIL import Image, ImageDraw, ImageFont
@@ -40,7 +40,11 @@ def start(update: Update, context: CallbackContext):
 def setup_bot():
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
-    app.run_polling()
+
+    # Usa run_async() para evitar conflitos com o loop do Appwrite
+    asyncio.create_task(app.initialize())
+    asyncio.create_task(app.start())
+    asyncio.create_task(app.updater.start_polling())
 
 # 🔹 Função para salvar ou atualizar os dados no Appwrite
 def salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_dia):
@@ -179,10 +183,9 @@ def webhook():
     app.process_update(update)
     return {"status": "ok"}
 
-# 🔹 Função principal para rodar no Appwrite
+# 🔹 Corrigindo a função main para o Appwrite
 def main(context):
     context.log("🚀 Função executada no Appwrite!")
-    setup_bot()  # Garante que o bot está rodando e processando comandos
+    setup_bot()  # Inicia o bot sem bloquear o loop do Appwrite
     return context.res.empty()
-
 
