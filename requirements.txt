@@ -5,3 +5,4 @@ python-telegram-bot==20.0
 pytz
 schedule
 Pillow
+python-dotenv
