@@ -1,17 +1,12 @@
-from telegram import Bot, Update  # Interagir com a API do Telegram
-from flask import Flask, request  # Rodar no Appwrite (leve e eficiente)
-import os  # Manipular variáveis de ambiente
+from telegram import Bot, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackContext, filters
-import schedule  # Reset diário automático
-import time
-from threading import Thread
-from datetime import datetime
-import pytz
-import re
+import os
 from appwrite.client import Client
 from appwrite.services.databases import Databases
 from PIL import Image, ImageDraw, ImageFont
 import io
+import asyncio
+from flask import Flask, request
 
 # 🔹 Inicializa o Flask
 app = Flask(__name__)
@@ -41,89 +36,17 @@ async def start(update: Update, context: CallbackContext):
     )
     print("🔹 Bot iniciado!")
 
-# 🔹 Função para salvar ou atualizar os dados no Appwrite
-def salvar_dados_no_appwrite(nome_usuario, telegram_id, acertos_dia, percentual_dia):
-    try:
-        fuso_brasilia = pytz.timezone("America/Sao_Paulo")
-        data_atual = datetime.now(fuso_brasilia).strftime("%Y-%m-%d")
-
-        response = database.list_documents(
-            database_id=database_id,
-            collection_id=collection_id,
-            queries=[f"equal('telefone', '{telegram_id}')"]
-        )
-
-        if response["documents"]:
-            document_id = response["documents"][0]["$id"]
-            ultima_data = response["documents"][0].get("ultima_data", "")
-
-            if ultima_data != data_atual:
-                total_questoes = response["documents"][0]["questoes"]
-                nova_porcentagem = (
-                    (response["documents"][0]["percentual"] * total_questoes) +
-                    (response["documents"][0]["percentual_do_dia"] * response["documents"][0]["questoes_do_dia"])
-                ) / total_questoes if total_questoes > 0 else percentual_dia
-
-                database.update_document(
-                    database_id=database_id,
-                    collection_id=collection_id,
-                    document_id=document_id,
-                    data={
-                        "questoes": total_questoes + response["documents"][0]["questoes_do_dia"],
-                        "percentual": round(nova_porcentagem, 2),
-                        "questoes_do_dia": acertos_dia,
-                        "percentual_do_dia": percentual_dia,
-                        "dias": response["documents"][0]["dias"] + 1,
-                        "ultima_data": data_atual,
-                    }
-                )
-            else:
-                database.update_document(
-                    database_id=database_id,
-                    collection_id=collection_id,
-                    document_id=document_id,
-                    data={
-                        "questoes_do_dia": acertos_dia,
-                        "percentual_do_dia": percentual_dia,
-                    }
-                )
-        else:
-            database.create_document(
-                database_id=database_id,
-                collection_id=collection_id,
-                document_id="unique()",
-                data={
-                    "nome": nome_usuario,
-                    "telefone": telegram_id,
-                    "dias": 1,
-                    "questoes": 0,
-                    "questoes_do_dia": acertos_dia,
-                    "percentual": percentual_dia,
-                    "percentual_do_dia": percentual_dia,
-                    "ultima_data": data_atual,
-                }
-            )
-
-        print(f"📊 Dados de {nome_usuario} foram atualizados no Appwrite!")
-
-    except Exception as e:
-        print(f"Erro ao salvar dados no Appwrite: {str(e)}")
-
-# 🔹 Comando para gerar ranking e criar a imagem
+# 🔹 Função para gerar ranking e enviar como imagem
 async def gerar_ranking(update: Update, context: CallbackContext):
     try:
         response = database.list_documents(database_id, collection_id)
-        usuarios = [
-            {
-                "nome": doc["nome"],
-                "dias": doc["dias"],
-                "questoes": doc["questoes"],
-                "percentual": doc["percentual"]
-            }
-            for doc in response["documents"]
-        ]
-
-        usuarios = sorted(usuarios, key=lambda x: (-x["dias"], -x["questoes"]))
+        usuarios = sorted(
+            [
+                {"nome": doc["nome"], "dias": doc["dias"], "questoes": doc["questoes"], "percentual": doc["percentual"]}
+                for doc in response["documents"]
+            ],
+            key=lambda x: (-x["dias"], -x["questoes"])
+        )
 
         medalha_ouro = Image.open("imagem/medalha_ouro.png").resize((50, 50))
         medalha_prata = Image.open("imagem/medalha_prata.png").resize((50, 50))
@@ -146,7 +69,6 @@ async def gerar_ranking(update: Update, context: CallbackContext):
         for i, user in enumerate(usuarios):
             if i < 3:
                 img.paste(medalhas[i], (10, y - 10))
-
             draw.text((50, y), user["nome"], fill="black", font=font)
             draw.text((300, y), str(user["dias"]), fill="black", font=font)
             draw.text((380, y), str(user["questoes"]), fill="black", font=font)
@@ -162,12 +84,14 @@ async def gerar_ranking(update: Update, context: CallbackContext):
     except Exception as e:
         print(f"Erro ao gerar ranking: {str(e)}")
 
-# 🔹 Função principal para rodar no Appwrite
-def main(context):
+# 🔹 Função principal compatível com o Appwrite
+def main(context=None):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("ranking", gerar_ranking))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, salvar_dados_no_appwrite))
-    print("Bot rodando...")
-    app.run_polling()
 
+    print("Bot rodando no Appwrite...")
+    loop.run_until_complete(app.run_polling())
